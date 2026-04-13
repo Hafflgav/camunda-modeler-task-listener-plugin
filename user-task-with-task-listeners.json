@@ -1,0 +1,122 @@
+[
+  {
+    "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+    "name": "User Task with Task Listeners",
+    "id": "com.miragon.user-task-with-task-listeners",
+    "description": "User Task mit konfigurierbaren Task Listeners für Assign, Complete und Cancel Events. Benötigt das TaskListenerSync Modeler Plugin.",
+    "version": 1,
+    "engines": {
+      "camunda": "^8.6"
+    },
+    "appliesTo": [
+      "bpmn:UserTask"
+    ],
+    "icon": {
+      "contents": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234338ca' stroke-width='2'%3E%3Cpath d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M23 21v-2a4 4 0 0 0-3-3.87'/%3E%3Cpath d='M16 3.13a4 4 0 0 1 0 7.75'/%3E%3C/svg%3E"
+    },
+    "groups": [
+      {
+        "id": "assignListener",
+        "label": "Assign Listener"
+      },
+      {
+        "id": "completeListener",
+        "label": "Complete Listener"
+      },
+      {
+        "id": "cancelListener",
+        "label": "Cancel Listener"
+      }
+    ],
+    "properties": [
+      {
+        "type": "Hidden",
+        "value": true,
+        "binding": {
+          "type": "zeebe:userTask"
+        }
+      },
+
+      {
+        "label": "Listener Type",
+        "description": "Job Type des Workers, der beim Zuweisen aufgerufen wird.",
+        "type": "String",
+        "value": "assign-listener",
+        "group": "assignListener",
+        "feel": "optional",
+        "binding": {
+          "type": "zeebe:property",
+          "name": "taskListener.assigning.type"
+        },
+        "constraints": {
+          "notEmpty": true
+        }
+      },
+      {
+        "label": "Retries",
+        "description": "Anzahl Wiederholungsversuche.",
+        "type": "String",
+        "value": "3",
+        "group": "assignListener",
+        "binding": {
+          "type": "zeebe:property",
+          "name": "taskListener.assigning.retries"
+        }
+      },
+
+      {
+        "label": "Listener Type",
+        "description": "Job Type des Workers, der beim Abschließen aufgerufen wird.",
+        "type": "String",
+        "value": "complete-listener",
+        "group": "completeListener",
+        "feel": "optional",
+        "binding": {
+          "type": "zeebe:property",
+          "name": "taskListener.completing.type"
+        },
+        "constraints": {
+          "notEmpty": true
+        }
+      },
+      {
+        "label": "Retries",
+        "description": "Anzahl Wiederholungsversuche.",
+        "type": "String",
+        "value": "3",
+        "group": "completeListener",
+        "binding": {
+          "type": "zeebe:property",
+          "name": "taskListener.completing.retries"
+        }
+      },
+
+      {
+        "label": "Listener Type",
+        "description": "Job Type des Workers, der beim Abbrechen aufgerufen wird.",
+        "type": "String",
+        "value": "cancel-listener",
+        "group": "cancelListener",
+        "feel": "optional",
+        "binding": {
+          "type": "zeebe:property",
+          "name": "taskListener.canceling.type"
+        },
+        "constraints": {
+          "notEmpty": true
+        }
+      },
+      {
+        "label": "Retries",
+        "description": "Anzahl Wiederholungsversuche.",
+        "type": "String",
+        "value": "3",
+        "group": "cancelListener",
+        "binding": {
+          "type": "zeebe:property",
+          "name": "taskListener.canceling.retries"
+        }
+      }
+    ]
+  }
+]

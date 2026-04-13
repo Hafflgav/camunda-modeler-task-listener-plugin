@@ -11,13 +11,57 @@
  *
  * Listeners are only injected if no zeebe:TaskListeners block already exists,
  * so manually configured tasks are never overwritten.
+ *
+ * Toggle with Ctrl+Shift+L (Cmd+Shift+L on macOS). State is persisted in
+ * localStorage so it survives Modeler restarts.
  */
+
+var STORAGE_KEY = 'taskListenerPlugin.enabled';
+
+// Read persisted state; default to disabled when no value is stored yet.
+var enabled = localStorage.getItem(STORAGE_KEY) === 'true';
+
+function showToast(message) {
+  var el = document.createElement('div');
+  el.textContent = message;
+  el.style.cssText =
+    'position:fixed;bottom:24px;right:24px;' +
+    'background:#333;color:#fff;' +
+    'padding:10px 16px;border-radius:4px;' +
+    'font-size:13px;z-index:9999;' +
+    'pointer-events:none;transition:opacity 0.3s;';
+  document.body.appendChild(el);
+  setTimeout(function() {
+    el.style.opacity = '0';
+    setTimeout(function() {
+      el.parentNode && el.parentNode.removeChild(el);
+    }, 300);
+  }, 2000);
+}
+
+// Global keydown listener — works regardless of where focus is in the Modeler.
+document.addEventListener('keydown', function(event) {
+  if (
+    (event.key === 'l' || event.key === 'L') &&
+    (event.ctrlKey || event.metaKey) &&
+    event.shiftKey
+  ) {
+    enabled = !enabled;
+    localStorage.setItem(STORAGE_KEY, String(enabled));
+    showToast('Task Listener Plugin: ' + (enabled ? 'enabled' : 'disabled'));
+    event.preventDefault();
+  }
+});
 
 function AutoTaskListenerPlugin(eventBus, modeling, moddle) {
 
   // Hook into shape creation as part of the same compound command,
   // so Ctrl+Z undoes the shape AND the injected listeners together.
   eventBus.on('commandStack.shape.create.postExecute', function(event) {
+    if (!enabled) {
+      return;
+    }
+
     var shape = event.context.shape;
 
     if (shape.type !== 'bpmn:UserTask') {

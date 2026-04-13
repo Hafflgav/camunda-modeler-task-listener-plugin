@@ -31,6 +31,8 @@ The resulting BPMN XML looks like this:
 </bpmn:userTask>
 ```
 
+**Togglable:** the plugin is **disabled by default**. Press **Ctrl+Shift+L** (macOS: **Cmd+Shift+L**) in any open BPMN diagram to enable or disable it. A small toast notification confirms the new state. The toggle is persisted in `localStorage` and survives Modeler restarts.
+
 **Idempotent:** if a `zeebe:TaskListeners` block already exists on the element
 (e.g. set manually via the Properties Panel), the plugin leaves it untouched.
 
@@ -74,8 +76,8 @@ resources/plugins/
 
 ### Restart the Camunda Modeler
 
-The plugin is loaded on startup and is active immediately for every Camunda 8
-(`.bpmn`) diagram.
+The plugin is loaded on startup but is **disabled by default**. Press
+**Ctrl+Shift+L** (macOS: **Cmd+Shift+L**) to enable it.
 
 ## Development
 
@@ -96,6 +98,7 @@ npm run build
 ├── TaskListenerSyncPlugin.js   # bpmn-js module with the auto-inject logic
 ├── webpack.config.js
 ├── package.json
+├── .gitignore
 └── client/
     └── client.js               # Webpack output (loaded by Camunda Modeler)
 ```
@@ -103,6 +106,8 @@ npm run build
 ## Limitations
 
 - Desktop Modeler only. The Web Modeler does not support client-side bpmn-js plugins.
-- Applies to Camunda 8 diagrams only.
+- Task listener injection applies to Camunda 8 diagrams only. The plugin loads
+  on both Camunda 7 and Camunda 8 editors but skips elements that lack Zeebe
+  moddle support, so it is safe to use alongside C7 diagrams.
 - Only fires on **new** shapes. Existing user tasks in an opened file are not
   modified retroactively.

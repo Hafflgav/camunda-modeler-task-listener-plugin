@@ -154,6 +154,64 @@ module.exports = {
 };
 ```
 
+## Adding a toggle (enable / disable)
+
+The Camunda Modeler plugin descriptor (`index.js`) only supports `name`, `script`, and `style`. **Do not add a `menu` property** — the plugin loader will silently reject the entire plugin if it encounters it.
+
+Instead, implement a toggle entirely client-side using `localStorage` and a global `keydown` listener:
+
+```js
+var STORAGE_KEY = 'myPlugin.enabled';
+
+// Default to disabled; change to === 'true' check for opt-in behaviour
+var enabled = localStorage.getItem(STORAGE_KEY) === 'true';
+
+// Attach to document so the shortcut works regardless of canvas focus
+document.addEventListener('keydown', function(event) {
+  if (
+    (event.key === 'l' || event.key === 'L') &&
+    (event.ctrlKey || event.metaKey) &&
+    event.shiftKey
+  ) {
+    enabled = !enabled;
+    localStorage.setItem(STORAGE_KEY, String(enabled));
+    showToast('My Plugin: ' + (enabled ? 'enabled' : 'disabled'));
+    event.preventDefault();
+  }
+});
+```
+
+Add a small toast helper so the user gets visual feedback:
+
+```js
+function showToast(message) {
+  var el = document.createElement('div');
+  el.textContent = message;
+  el.style.cssText =
+    'position:fixed;bottom:24px;right:24px;' +
+    'background:#333;color:#fff;' +
+    'padding:10px 16px;border-radius:4px;' +
+    'font-size:13px;z-index:9999;' +
+    'pointer-events:none;transition:opacity 0.3s;';
+  document.body.appendChild(el);
+  setTimeout(function() {
+    el.style.opacity = '0';
+    setTimeout(function() { el.parentNode && el.parentNode.removeChild(el); }, 300);
+  }, 2000);
+}
+```
+
+Then guard the injection logic with the flag:
+
+```js
+eventBus.on('commandStack.shape.create.postExecute', function(event) {
+  if (!enabled) { return; }
+  // ...
+});
+```
+
+**Why not `bpmn-js keyboard` service?** The bpmn-js `keyboard` service only fires events when the canvas has focus. `document.addEventListener('keydown', …)` is more reliable and requires no extra injection.
+
 ## Key rules
 
 | Rule | Detail |
@@ -202,11 +260,12 @@ Copy the **entire plugin folder** (not just `client/client.js`) and restart the 
 
 ## Checklist for a new plugin
 
-- [ ] `index.js` references `./client/client.js`
+- [ ] `index.js` only contains `name` and `script` — no `menu` property
 - [ ] `client.js` registers for both `bpmn.modeler.additionalModules` and `cloud-bpmn.modeler.additionalModules`
 - [ ] Module uses `postExecute` (not `postExecuted`) for undo-safety
 - [ ] All `moddle.create(...)` results have `$parent` set
 - [ ] Idempotency guard prevents double-injection
+- [ ] Toggle (if needed) uses `document.addEventListener('keydown', …)` + `localStorage`, not the bpmn-js `keyboard` service or `index.js` menu
 - [ ] `package.json` name matches the repository/folder name
 - [ ] `.gitignore` excludes `node_modules/` and `dist/`
 - [ ] Bundle is built (`npm run build`) before shipping
